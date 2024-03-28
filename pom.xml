@@ -29,7 +29,7 @@
   <groupId>org.example</groupId>
         
   
-  <artifactId>gRPC</artifactId>
+  <artifactId>gRPC_NumberGenerator</artifactId>
         
   
   <version>1.0-SNAPSHOT</version>

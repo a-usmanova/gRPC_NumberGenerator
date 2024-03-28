@@ -1,0 +1,7 @@
+grpc:
+  server:
+    port: 9092
+
+grpc-server:
+  host: "localhost"
+  port: 8082
