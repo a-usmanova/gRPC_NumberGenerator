@@ -12,8 +12,11 @@ import java.util.concurrent.CountDownLatch;
 @RequiredArgsConstructor
 public class RemoteClientStreamObserver implements io.grpc.stub.StreamObserver<GRpcProtocol.NumberResponse> {
     private long value;
-    private CountDownLatch latch = new CountDownLatch(1);
+    private CountDownLatch latch;
 
+    public RemoteClientStreamObserver (CountDownLatch latch) {
+        this.latch = latch;
+    }
 
     @Override
     public void onNext(GRpcProtocol.NumberResponse response) {

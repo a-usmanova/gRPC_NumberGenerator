@@ -2,11 +2,8 @@ package org.exemple.service;
 
 import com.example.grpc.GRpcProtocol;
 import com.example.grpc.NumberGeneratorGrpc;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.exemple.utils.ChannelSettings;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CountDownLatch;
@@ -15,12 +12,10 @@ import java.util.concurrent.CountDownLatch;
 @Service
 public class NumberGeneratorService {
 
-    @Autowired
-    private RemoteClientStreamObserver remoteClientStreamObserver;
-    @Autowired
-    private ChannelSettings channelSettings;
-
+    @GrpcClient("grpc-number-generator")
+    NumberGeneratorGrpc.NumberGeneratorStub asyncClient;
     private CountDownLatch latch = new CountDownLatch(1);
+
     private static final int NUMBER_SEQUENCE_LIMIT = 50;
     private static final int FIRST_VALUE = 1;
     private static final int LAST_VALUE = 30;
@@ -28,22 +23,7 @@ public class NumberGeneratorService {
 
     public void getNumbers() throws InterruptedException {
         log.info("Numbers Client is starting...");
-
-        ManagedChannel managedChannel = ManagedChannelBuilder.forAddress(
-                channelSettings.getHost()
-                        , channelSettings.getPort())
-                .usePlaintext()
-                .build();
-
-        NumberGeneratorGrpc.NumberGeneratorStub asyncClient = NumberGeneratorGrpc.newStub(managedChannel);
-        action(asyncClient);
-        latch.await();
-
-        log.info("Numbers Client is shutting down...");
-        managedChannel.shutdown();
-    }
-
-    private void action(NumberGeneratorGrpc.NumberGeneratorStub asyncClient) {
+        RemoteClientStreamObserver remoteClientStreamObserver = new RemoteClientStreamObserver(latch);
         GRpcProtocol.NumberRequest request = makeRequest();
 
         asyncClient.generateNumbers(request, remoteClientStreamObserver);
@@ -54,6 +34,9 @@ public class NumberGeneratorService {
             sleep();
         }
         log.info("The number sequence has ended");
+        latch.await();
+
+        log.info("Numbers Client is shutting down...");
     }
 
     private long getNextValue(RemoteClientStreamObserver remoteClientStreamObserver) {
