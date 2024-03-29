@@ -1,0 +1,7 @@
+grpc:
+  server:
+    port: 9092
+  client:
+    grpc-number-generator:
+      address: localhost:8082
+      negotiation-type: plaintext
